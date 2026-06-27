@@ -543,12 +543,7 @@ exports.createProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, price, stock, unit, vat_percent, category_id, is_featured, is_active, image_url, product_link, order_url, product_url } = req.body;
-
-    const product = await Product.findByPk(id);
-    if (!product) {
-      return res.status(404).json({
-        success: false, } = req.body;
+    const { name, description, price, stock, unit, vat_percent, category_id, is_featured, is_active, image_url } = req.body;
 
     const product = await Product.findByPk(id);
     if (!product) {
