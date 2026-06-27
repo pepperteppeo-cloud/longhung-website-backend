@@ -461,7 +461,7 @@ exports.getProductBySlug = async (req, res) => {
 // POST: Create product (admin only)
 exports.createProduct = async (req, res) => {
   try {
-    const { name, description, price, stock, unit, vat_percent, category_id, is_featured, image_url } = req.body;
+    const { name, description, price, stock, unit, vat_percent, category_id, is_featured, image_url, product_link, order_url, product_url } = req.body;
 
     // Validate input
     if (!name || !price) {
@@ -511,6 +511,10 @@ exports.createProduct = async (req, res) => {
       imageUrl = sanitizeInput(image_url);
     }
 
+    // Handle product link - accept multiple field names
+    const productLinkValue = product_link || order_url || product_url;
+    const finalProductLink = productLinkValue ? sanitizeInput(productLinkValue).trim() || null : null;
+
     // Create product
     const product = await Product.create({
       name: nameClean,
@@ -522,7 +526,8 @@ exports.createProduct = async (req, res) => {
       category_id: category_id ? parseInt(category_id) : null,
       slug,
       image_url: imageUrl,
-      is_featured: is_featured === 'true' || is_featured === true
+      is_featured: is_featured === 'true' || is_featured === true,
+      product_link: finalProductLink
     });
 
     res.status(201).json({
@@ -543,7 +548,7 @@ exports.createProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, price, stock, unit, vat_percent, category_id, is_featured, is_active, image_url } = req.body;
+    const { name, description, price, stock, unit, vat_percent, category_id, is_featured, is_active, image_url, product_link, order_url, product_url } = req.body;
 
     const product = await Product.findByPk(id);
     if (!product) {
@@ -587,6 +592,10 @@ exports.updateProduct = async (req, res) => {
       imageUrl = sanitizeInput(image_url);
     }
 
+    // Handle product link - accept multiple field names
+    const productLinkValue = product_link || order_url || product_url;
+    const finalProductLink = productLinkValue ? sanitizeInput(productLinkValue).trim() || null : product.product_link;
+
     // Update product
     const updateData = {
       ...(name && { name: sanitizeInput(name) }),
@@ -598,7 +607,8 @@ exports.updateProduct = async (req, res) => {
       ...(category_id !== undefined && { category_id: category_id ? parseInt(category_id) : null }),
       ...(imageUrl && { image_url: imageUrl }),
       ...(is_featured !== undefined && { is_featured: is_featured === 'true' || is_featured === true }),
-      ...(is_active !== undefined && { is_active: is_active === 'true' || is_active === true })
+      ...(is_active !== undefined && { is_active: is_active === 'true' || is_active === true }),
+      product_link: finalProductLink
     };
 
     await product.update(updateData);
