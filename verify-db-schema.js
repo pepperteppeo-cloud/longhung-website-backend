@@ -1,12 +1,12 @@
 /**
- * Verify and clean database schema
- * Ensures product_link column is removed if it exists
+ * Verify database schema
+ * Ensures product_link column EXISTS in products table
  */
 
 const { Client } = require('pg');
 require('dotenv').config();
 
-async function verifyAndClean() {
+async function verifySchema() {
   const client = new Client({
     connectionString: process.env.DATABASE_URL || 
       `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`
@@ -24,15 +24,15 @@ async function verifyAndClean() {
     `);
 
     if (result.rows.length > 0) {
-      console.log('⚠️  Found product_link column - removing it...');
-      
-      await client.query(`ALTER TABLE products DROP COLUMN IF EXISTS product_link CASCADE`);
-      console.log('✓ Column product_link removed successfully');
+      console.log('✓ product_link column exists (correct state)');
     } else {
-      console.log('✓ product_link column does not exist (correct state)');
+      console.log('⚠️  product_link column does not exist - adding it...');
+      
+      await client.query(`ALTER TABLE products ADD COLUMN product_link VARCHAR(500)`);
+      console.log('✓ Column product_link added successfully');
     }
 
-    // Verify clean products table columns
+    // Verify all products table columns
     const columnsResult = await client.query(`
       SELECT column_name, data_type 
       FROM information_schema.columns 
@@ -54,4 +54,4 @@ async function verifyAndClean() {
   }
 }
 
-verifyAndClean();
+verifySchema();
