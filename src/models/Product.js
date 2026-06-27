@@ -46,11 +46,6 @@ const Product = sequelize.define('Product', {
   sku: {
     type: DataTypes.STRING(50),
     unique: true
-  },
-  product_link: {
-    type: DataTypes.STRING(500),
-    allowNull: true,
-    comment: 'Custom product/order link for CTA button'
   }
 }, {
   tableName: 'products',
