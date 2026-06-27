@@ -12,6 +12,34 @@ const Product = require('./models/Product');
 const ProductImage = require('./models/ProductImage');
 const Order = require('./models/Order');
 const Article = require('./models/Article');
+const sequelize = require('./config/database');
+
+// Ensure database schema is up to date
+const ensureProductLinkColumn = async () => {
+  try {
+    const columnExists = await sequelize.query(`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'products' AND column_name = 'product_link'
+    `);
+
+    if (!columnExists[0] || columnExists[0].length === 0) {
+      console.log('⚠️  Adding missing product_link column to database...');
+      await sequelize.query(`ALTER TABLE products ADD COLUMN product_link VARCHAR(500)`);
+      console.log('✓ Column product_link added successfully');
+    }
+  } catch (error) {
+    if (!error.message.includes('already exists')) {
+      console.warn('⚠️  Warning: Could not verify product_link column:', error.message);
+    }
+  }
+};
+
+// Run schema check on startup
+ensureProductLinkColumn().catch(err => {
+  console.error('⚠️  Schema check error:', err.message);
+  // Don't fail startup, just warn
+});
 
 // Setup associations
 Product.belongsTo(Category, { foreignKey: 'category_id' });
