@@ -599,6 +599,12 @@ exports.updateProduct = async (req, res) => {
       ...(imageUrl && { image_url: imageUrl }),
       ...(is_featured !== undefined && { is_featured: is_featured === 'true' || is_featured === true }),
       ...(is_active !== undefined && { is_active: is_active === 'true' || is_active === true })
+    };
+
+    // Save the updated product
+    await product.update(updateData);
+
+    res.json({
       success: true,
       data: product,
       message: 'Product updated successfully'
